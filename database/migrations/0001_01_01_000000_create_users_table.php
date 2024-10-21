@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('password', 50)->nullable(false);
             $table->string('fullname', 100)->nullable(false);
             $table->string('email', 50)->unique()->nullable(false);
-            $table->char('phonenumber', 13)->nullable(false);
+            $table->string('phonenumber', 13)->nullable(false);
             $table->string('alamat', 200)->nullable(false);
             $table->string('profilepicture', 255)->default('url_placeholder_profil')->nullable(false);
             $table->enum('role', ['Admin', 'Pengguna'])->nullable(false);

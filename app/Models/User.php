@@ -19,9 +19,14 @@ class User extends Authenticatable implements JWTSubject
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'email',
+        'username',
         'password',
+        'fullname',
+        'email',
+        'phonenumber',
+        'alamat',
+        'profilepicture',
+        'role',
     ];
 
     /**
@@ -46,6 +51,7 @@ class User extends Authenticatable implements JWTSubject
             'password' => 'hashed',
         ];
     }
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
