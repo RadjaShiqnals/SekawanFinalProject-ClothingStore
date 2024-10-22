@@ -17,7 +17,6 @@ return new class extends Migration
             $table->foreignId('pembelian_metode_pembayaran_id')->constrained('metode_pembayaran', 'metode_pembayaran_id')->onDelete('cascade');
             $table->timestamp('pembelian_tanggal')->nullable(false);
             $table->integer('pembelian_total_harga')->nullable(false);
-            $table->enum('status' , ['lunas','belum_bayar'])->nullable(false);
             $table->timestamps();
         });
     }

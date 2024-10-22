@@ -17,7 +17,6 @@ class Pembelian extends Model
         'pembelian_metode_pembayaran_id',
         'pembelian_tanggal',
         'pembelian_total_harga',
-        'status',
     ];
 
     public function user()

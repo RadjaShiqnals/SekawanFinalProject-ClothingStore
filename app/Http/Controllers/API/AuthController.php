@@ -19,9 +19,9 @@ class AuthController extends Controller
             'password' => 'required|string|min:6|confirmed',
             'fullname' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'phonenumber' => 'required|string|max:15',
+            'phonenumber' => 'required|string|max:13|min:11',
             'alamat' => 'required|string|max:255',
-            'profilepicture' => 'nullable|string|max:255',
+            'profilepicture' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
             'role' => 'required|in:Pengguna,Admin',
         ]);
 
@@ -29,6 +29,13 @@ class AuthController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
+        $profilePicturePath = 'default.jpg';
+        if ($request->hasFile('profilepicture')) {
+            $file = $request->file('profilepicture');
+            $storedPath = $file->store('profilepictures', 'public');
+            $profilePicturePath = basename($storedPath);
+        }
+    
         $user = User::create([
             'username' => $request->username,
             'password' => Hash::make($request->password),
@@ -36,13 +43,14 @@ class AuthController extends Controller
             'email' => $request->email,
             'phonenumber' => $request->phonenumber,
             'alamat' => $request->alamat,
-            'profilepicture' => $request->profilepicture ?? 'default.jpg',
+            'profilepicture' => $profilePicturePath,
             'role' => $request->role,
         ]);
 
-        $token = JWTAuth::fromUser($user);
-
-        return response()->json(compact('user', 'token'), 201);
+        return response()->json([
+            'message' => 'User created successfully',
+            'data' => $user,
+        ] ,201);
     }
 
     public function login(Request $request)
@@ -52,8 +60,10 @@ class AuthController extends Controller
         if (!$token = JWTAuth::attempt($credentials)) {
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
-
-        return response()->json(compact('token'));
+        return response()->json([
+            'user' => Auth::user(),
+            'token' => $token,
+        ]);
     }
 
     public function logout(Request $request)
