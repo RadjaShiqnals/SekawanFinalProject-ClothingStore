@@ -7,12 +7,143 @@ use App\Models\KategoriPakaian;
 use App\Models\MetodePembayaran;
 use Illuminate\Http\Request;
 use App\Models\Pakaian;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
+    public function createUser(Request $request)
+    {
+        // Check if the authenticated user has the role "Admin"
+        $user = auth('api')->user();
+        if ($user->role !== 'Admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'username' => 'required|string|max:255|unique:users',
+            'password' => 'required|string|min:6|confirmed',
+            'fullname' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'phonenumber' => 'required|string|max:13|min:11',
+            'alamat' => 'required|string|max:255',
+            'profilepicture' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+            'role' => 'required|in:Pengguna,Admin',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $profilePicturePath = 'default.jpg';
+        if ($request->hasFile('profilepicture')) {
+            $file = $request->file('profilepicture');
+            $storedPath = $file->store('profilepictures', 'public');
+            $profilePicturePath = basename($storedPath);
+        }
+    
+        $user = User::create([
+            'username' => $request->username,
+            'password' => Hash::make($request->password),
+            'fullname' => $request->fullname,
+            'email' => $request->email,
+            'phonenumber' => $request->phonenumber,
+            'alamat' => $request->alamat,
+            'profilepicture' => $profilePicturePath,
+            'role' => $request->role,
+        ]);
+
+        return response()->json([
+            'message' => 'User created successfully',
+            'data' => $user,
+        ] ,201);
+    }
+
+    public function updateUser(Request $request, $id)
+{
+    // Check if the authenticated user has the role "Admin"
+    $authUser = auth('api')->user();
+    if ($authUser->role !== 'Admin') {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    $validator = Validator::make($request->all(), [
+        'username' => 'sometimes|required|string|max:255|unique:users,username,' . $id,
+        'password' => 'sometimes|required|string|min:6|confirmed',
+        'fullname' => 'sometimes|required|string|max:255',
+        'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $id,
+        'phonenumber' => 'sometimes|required|string|max:13|min:11',
+        'alamat' => 'sometimes|required|string|max:255',
+        'profilepicture' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+        'role' => 'sometimes|required|in:Pengguna,Admin',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json($validator->errors(), 422);
+    }
+
+    $user = User::findOrFail($id);
+
+    if ($request->hasFile('profilepicture')) {
+        // Get the old profile picture
+        $oldProfilePicture = $user->profilepicture;
+
+        // Store the new profile picture
+        $file = $request->file('profilepicture');
+        $storedPath = $file->store('profilepictures', 'public');
+        $user->profilepicture = basename($storedPath);
+
+        // Delete the old profile picture if it's not the default one
+        if ($oldProfilePicture !== 'default.jpg') {
+            Storage::disk('public')->delete('profilepictures/' . $oldProfilePicture);
+        }
+    }
+
+    if ($request->filled('password')) {
+        $user->password = Hash::make($request->password);
+    }
+
+    // Debugging: Log the request data
+    \Log::info('Request data:', $request->all());
+
+    // Update other fields
+    $user->username = $request->input('username', $user->username);
+    $user->fullname = $request->input('fullname', $user->fullname);
+    $user->email = $request->input('email', $user->email);
+    $user->phonenumber = $request->input('phonenumber', $user->phonenumber);
+    $user->alamat = $request->input('alamat', $user->alamat);
+    $user->role = $request->input('role', $user->role);
+
+    // Debugging: Log the updated user data before saving
+    \Log::info('Updated user data before saving:', $user->toArray());
+
+    $user->save();
+
+    // Debugging: Log the updated user data after saving
+    \Log::info('Updated user data after saving:', $user->toArray());
+
+    return response()->json(['message' => 'User updated successfully', 'data' => $user], 200);
+}
+
+    public function deleteUser($id)
+    {
+        // Check if the authenticated user has the role "Admin"
+        $user = auth('api')->user();
+        if ($user->role !== 'Admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        return response()->json(['message' => 'User deleted successfully'], 200);
+    }
+
     public function createKategoriPakaian(Request $request)
     {
-        // Check if the authenticated user has the role "Pengguna"
+        // Check if the authenticated user has the role "Admin"
         $user = auth('api')->user();
         if ($user->role !== 'Admin') {
             return response()->json(['message' => 'Unauthorized'], 403);
