@@ -33,6 +33,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+                'token' => $request->cookie('token'), // Include the token from the cookies
             ],
         ];
     }

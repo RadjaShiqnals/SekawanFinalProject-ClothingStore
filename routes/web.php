@@ -15,7 +15,14 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    $user = Auth::user();
+    if ($user->role === 'Admin') {
+        return Inertia::render('Admin/AdminDashboard');
+    } elseif ($user->role === 'Pengguna') {
+        return Inertia::render('User/UserDashboard');
+    } else {
+        abort(403, 'Unauthorized');
+    }
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

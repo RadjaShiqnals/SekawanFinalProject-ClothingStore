@@ -5,20 +5,42 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import {useState} from 'react';
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
-        email: '',
+        username: '',
         password: '',
         remember: false,
     });
-
-    const submit = (e) => {
+    const [token, setToken] = useState(null);
+    axios.defaults.withCredentials = true;
+    const submit = async (e) => {
         e.preventDefault();
 
-        post(route('login'), {
-            onFinish: () => reset('password'),
-        });
+        try {
+            // Make the login request
+            const response = await axios.post(route("login"), {
+                username: data.username,
+                password: data.password,
+                remember: data.remember,
+            });
+    
+            // Store the token in state
+            setToken(response.data.token);
+
+            // Redirect to the dashboard if login is successful
+            if (response.status === 200) {
+                window.location.href = "/dashboard";
+            } else {
+                console.error("Login failed");
+            }
+        } catch (error) {
+            setMessage(error.response.data.message ?? error.response.data.error);
+            console.error("Login failed", error);
+        } finally {
+            reset("password");
+        }
     };
 
     return (
@@ -33,20 +55,19 @@ export default function Login({ status, canResetPassword }) {
 
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="email" value="Email" />
+                    <InputLabel htmlFor="username" value="Username" />
 
                     <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
+                        id="username"
+                        name="username"
+                        value={data.username}
                         className="mt-1 block w-full"
                         autoComplete="username"
                         isFocused={true}
-                        onChange={(e) => setData('email', e.target.value)}
+                        onChange={(e) => setData('username', e.target.value)}
                     />
 
-                    <InputError message={errors.email} className="mt-2" />
+                    <InputError message={errors.name} className="mt-2" />
                 </div>
 
                 <div className="mt-4">
