@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Pembelian;
 
 class AdminController extends Controller
 {
@@ -76,7 +77,7 @@ class AdminController extends Controller
         'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $id,
         'phonenumber' => 'sometimes|required|string|max:13|min:11',
         'alamat' => 'sometimes|required|string|max:255',
-        'profilepicture' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+        'profilepicture' => 'sometimes|file|mimes:jpg,jpeg,png|max:2048',
         'role' => 'sometimes|required|in:Pengguna,Admin',
     ]);
 
@@ -106,7 +107,6 @@ class AdminController extends Controller
     }
 
     // Debugging: Log the request data
-    \Log::info('Request data:', $request->all());
 
     // Update other fields
     $user->username = $request->input('username', $user->username);
@@ -116,13 +116,7 @@ class AdminController extends Controller
     $user->alamat = $request->input('alamat', $user->alamat);
     $user->role = $request->input('role', $user->role);
 
-    // Debugging: Log the updated user data before saving
-    \Log::info('Updated user data before saving:', $user->toArray());
-
     $user->save();
-
-    // Debugging: Log the updated user data after saving
-    \Log::info('Updated user data after saving:', $user->toArray());
 
     return response()->json(['message' => 'User updated successfully', 'data' => $user], 200);
 }
@@ -139,6 +133,19 @@ class AdminController extends Controller
         $user->delete();
 
         return response()->json(['message' => 'User deleted successfully'], 200);
+    }
+
+    public function getAllUsers()
+    {
+        // Check if the authenticated user has the role "Admin"
+        $user = auth('api')->user();
+        if ($user->role !== 'Admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $users = User::all();
+
+        return response()->json(['message' => 'Users retrieved successfully', 'data' => $users], 200);
     }
 
     public function createKategoriPakaian(Request $request)
@@ -169,12 +176,13 @@ class AdminController extends Controller
         }
 
         $request->validate([
+            'metode_pembayaran_user_id' => 'required|numeric|min:11|max:13',
             'metode_pembayaran_jenis' => 'required|in:DANA,OVO,BCA,COD',
             'metode_pembayaran_nomor' => 'required|string|max:50',
         ]);
 
         // Check if the user already has the payment method type
-        $existingMetodePembayaran = MetodePembayaran::where('metode_pembayaran_user_id', $user->id)
+        $existingMetodePembayaran = MetodePembayaran::where('metode_pembayaran_user_id', $request->metode_pembayaran_user_id)
             ->where('metode_pembayaran_jenis', $request->metode_pembayaran_jenis)
             ->first();
 
@@ -222,5 +230,43 @@ class AdminController extends Controller
         ]);
 
         return response()->json(['message' => 'Pakaian created successfully', 'data' => $pakaian], 201);
+    }
+    public function getAllTransactions()
+    {
+        // Check if the authenticated user has the role "Admin"
+        $user = auth('api')->user();
+        if ($user->role !== 'Admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $transactions = Pembelian::with(['user', 'metodePembayaran', 'pembelianDetails'])->get();
+
+        return response()->json(['message' => 'Transactions retrieved successfully', 'data' => $transactions], 200);
+    }
+
+    public function getAllPakaian()
+    {
+        // Check if the authenticated user has the role "Admin"
+        $user = auth('api')->user();
+        if ($user->role !== 'Admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $pakaian = Pakaian::with('kategoriPakaian')->get();
+
+        return response()->json(['message' => 'Pakaian retrieved successfully', 'data' => $pakaian], 200);
+    }
+
+    public function getAllKategoriPakaian()
+    {
+        // Check if the authenticated user has the role "Admin"
+        $user = auth('api')->user();
+        if ($user->role !== 'Admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $kategoriPakaian = KategoriPakaian::with('pakaian')->get();
+
+        return response()->json(['message' => 'Kategori Pakaian retrieved successfully', 'data' => $kategoriPakaian], 200);
     }
 }

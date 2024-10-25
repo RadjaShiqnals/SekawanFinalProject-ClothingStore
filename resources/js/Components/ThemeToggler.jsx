@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import Cookies from 'js-cookie';
 
 const ThemeToggler = () => {
     const [isDarkMode, setIsDarkMode] = useState(false);
 
     useEffect(() => {
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        const theme = Cookies.get('theme');
+        if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
             setIsDarkMode(true);
         } else {
@@ -16,10 +18,10 @@ const ThemeToggler = () => {
     const toggleTheme = () => {
         if (isDarkMode) {
             document.documentElement.classList.remove('dark');
-            localStorage.theme = 'light';
+            Cookies.set('theme', 'light', { expires: 365, secure: true, sameSite: 'Strict' });
         } else {
             document.documentElement.classList.add('dark');
-            localStorage.theme = 'dark';
+            Cookies.set('theme', 'dark', { expires: 365, secure: true, sameSite: 'Strict' });
         }
         setIsDarkMode(!isDarkMode);
     };
@@ -27,7 +29,7 @@ const ThemeToggler = () => {
     return (
         <button
             onClick={toggleTheme}
-            className="p-2 rounded-full bg-gray-200 dark:bg-gray-800"
+            className="p-2 rounded-full bg-transparent"
             aria-label="Toggle Theme"
         >
             {isDarkMode ? '🌙' : '☀️'}

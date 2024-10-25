@@ -25,6 +25,17 @@ Route::get('/dashboard', function () {
     }
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard/transaksi', function () {
+        $user = Auth::user();
+        if ($user->role === 'Pengguna') {
+            return Inertia::render('User/UserTransactions');
+        } else {
+            abort(403, 'Unauthorized');
+        }
+    })->name('user.transaksi');
+});
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

@@ -63,12 +63,23 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // Invalidate the JWT token
+        try {
+            JWTAuth::invalidate(JWTAuth::getToken());
+        } catch (\Exception $e) {
+            Log::error('Error invalidating token: ' . $e->getMessage());
+        }
+
+        // Log out the user
         Auth::guard('web')->logout();
 
+        // Invalidate the session
         $request->session()->invalidate();
 
+        // Regenerate the session token
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        // Remove the token from the cookie
+        return redirect('/')->withCookie(cookie()->forget('token'));
     }
 }

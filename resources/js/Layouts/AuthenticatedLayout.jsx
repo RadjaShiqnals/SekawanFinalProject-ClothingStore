@@ -4,7 +4,7 @@ import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-
+import ThemeToggler from '@/Components/ThemeToggler';
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
 
@@ -30,10 +30,20 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Dashboard
                                 </NavLink>
+                                {user === "admin" && (
+                                    <NavLink
+                                        href={route('user.transaksi')}
+                                        active={route().current('user.transaksi')}
+                                    >
+                                        List Transaksi
+                                    </NavLink>
+                                )}
+                                
                             </div>
                         </div>
 
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">
+                        <ThemeToggler/>
                             <div className="relative ms-3">
                                 <Dropdown>
                                     <Dropdown.Trigger>

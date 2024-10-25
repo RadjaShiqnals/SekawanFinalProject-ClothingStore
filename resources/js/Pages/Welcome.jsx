@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-
+import ThemeToggler from '@/Components/ThemeToggler';
 export default function Welcome({ auth, laravelVersion, phpVersion }) {
     const handleImageError = () => {
         document
@@ -38,6 +38,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                 </svg>
                             </div>
                             <nav className="-mx-3 flex flex-1 justify-end">
+                                <ThemeToggler/>
                                 {auth.user ? (
                                     <Link
                                         href={route('dashboard')}

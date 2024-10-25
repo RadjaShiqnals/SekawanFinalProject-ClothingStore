@@ -77,6 +77,20 @@ class UserController extends Controller
         return response()->json(['message' => 'Metode Pembayaran updated successfully', 'data' => $metodePembayaran], 200);
     }
 
+    public function getUserMetodePembayaran()
+    {
+        // Check if the authenticated user has the role "Pengguna"
+        $user = auth('api')->user();
+        if ($user->role !== 'Pengguna') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        // Retrieve the user's payment methods
+        $metodePembayaran = MetodePembayaran::where('metode_pembayaran_user_id', $user->id)->get();
+
+        return response()->json(['message' => 'Payment methods retrieved successfully', 'data' => $metodePembayaran], 200);
+    }
+
     public function addItemToNewCart(Request $request, $pembelianId = null)
     {
         // Check if the authenticated user has the role "Pengguna"
@@ -251,11 +265,51 @@ public function payPembelian(Request $request)
     return response()->json(['message' => 'Payment successful', 'data' => $pembelian], 200);
 }
 
+public function getPakaian()
+{
+    // Check if the authenticated user has the role "Pengguna"
+    $user = auth('api')->user();
+    if ($user->role !== 'Pengguna') {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    $transactions = Pakaian::with(['pembelianDetails', 'kategoriPakaian'])->get();
+
+    return response()->json(['message' => 'Clothes retrieved successfully', 'data' => $transactions], 200);
+}
+
     public function getMyPurchases()
     {
-        $user = Auth::user();
-        $pembelian = Pembelian::where('pembelian_user_id', $user->id)->get();
+        $user = Auth::guard('api')->user();
+        $pembelian = Pembelian::where('pembelian_user_id', $user->id)
+            ->with(['user', 'metodePembayaran', 'pembelianDetails'])
+            ->get();
 
         return response()->json(['data' => $pembelian], 200);
+    }
+
+    public function getTransactionDetails($pembelianId)
+    {
+        // Check if the authenticated user has the role "Pengguna"
+        $user = auth('api')->user();
+        if ($user->role !== 'Pengguna') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        // Retrieve the Pembelian
+        $pembelian = Pembelian::where('pembelian_id', $pembelianId)
+            ->where('pembelian_user_id', $user->id)
+            ->first();
+
+        if (!$pembelian) {
+            return response()->json(['message' => 'Transaction not found'], 404);
+        }
+
+        // Retrieve the PembelianDetails
+        $pembelianDetails = PembelianDetail::where('pembelian_detail_pembelian_id', $pembelianId)
+            ->with('pakaian')
+            ->get();
+
+        return response()->json(['message' => 'Transaction details retrieved successfully', 'data' => $pembelianDetails], 200);
     }
 }
