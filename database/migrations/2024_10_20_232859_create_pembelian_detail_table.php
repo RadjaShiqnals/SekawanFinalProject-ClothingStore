@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('pembelian_detail_jumlah')->nullable(false);
             $table->integer('pembelian_detail_total_harga')->nullable(false);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
