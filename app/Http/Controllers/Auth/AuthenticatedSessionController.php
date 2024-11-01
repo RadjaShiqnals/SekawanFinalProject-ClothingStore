@@ -49,8 +49,6 @@ class AuthenticatedSessionController extends Controller
 
         // Generate JWT token for the authenticated user
         $token = JWTAuth::fromUser($user);
-        Log::info('User: ' . $user);
-        Log::info('Token: ' . $token);
         // Return the token in the response
         return response()->json([
             'user' => $user,
@@ -67,7 +65,6 @@ class AuthenticatedSessionController extends Controller
         try {
             JWTAuth::invalidate(JWTAuth::getToken());
         } catch (\Exception $e) {
-            Log::error('Error invalidating token: ' . $e->getMessage());
         }
 
         // Log out the user

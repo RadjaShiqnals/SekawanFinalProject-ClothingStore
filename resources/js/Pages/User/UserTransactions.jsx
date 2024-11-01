@@ -72,7 +72,7 @@ export default function UserTransactions() {
             alert('Please select a payment method');
             return;
         }
-
+    
         axios.post('/api/user/pay-cart', {
             pembelian_id: selectedTransaction,
             metode_pembayaran_id: selectedPaymentMethod
@@ -82,10 +82,22 @@ export default function UserTransactions() {
             }
         })
         .then(response => {
+            const updatedTransactions = transactions.map(transaction => {
+                if (transaction.pembelian_id === selectedTransaction) {
+                    return {
+                        ...transaction,
+                        status: 'lunas',
+                        metode_pembayaran: {
+                            metode_pembayaran_id: selectedPaymentMethod,
+                            metode_pembayaran_jenis: paymentMethods.find(method => method.metode_pembayaran_id === selectedPaymentMethod).metode_pembayaran_jenis
+                        }
+                    };
+                }
+                return transaction;
+            });
+    
+            setTransactions(updatedTransactions);
             alert('Payment successful');
-            setTransactions(transactions.map(transaction => 
-                transaction.pembelian_id === selectedTransaction ? { ...transaction, status: 'lunas' } : transaction
-            ));
             setShowPaymentModal(false);
             setSelectedPaymentMethod(null);
         })

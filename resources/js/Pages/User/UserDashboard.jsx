@@ -32,14 +32,16 @@ export default function UserDashboard() {
     };
 
     const handleSubmit = () => {
-        const items = Object.entries(selectedItems).map(([pakaian_id, quantity]) => ({
-            pakaian_id: parseInt(pakaian_id),
-            quantity: parseInt(quantity)
-        }));
-
+        const items = Object.entries(selectedItems)
+            .filter(([pakaian_id, quantity]) => quantity && quantity !== '0')
+            .map(([pakaian_id, quantity]) => ({
+                pakaian_id: parseInt(pakaian_id),
+                quantity: parseInt(quantity)
+            }));
+    
         axios.post('/api/user/add-new-item', { items }, {
             headers: {
-            Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${token}`
             }
         })
         .then(response => {
@@ -85,10 +87,17 @@ export default function UserDashboard() {
                                             <input
                                                 type="text"
                                                 min="0"
-                                                max={cloth.pakaian_stok}
+                                                max="99"
+                                                maxLength="2"
                                                 value={selectedItems[cloth.pakaian_id] || 0}
-                                                onChange={(e) => handleQuantityChange(cloth.pakaian_id, e.target.value)}
-                                                className="mt-2 p-2 border rounded w-full"
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    if (/^\d*$/.test(value)) {
+                                                        handleQuantityChange(cloth.pakaian_id, value);
+                                                    }
+                                                }}
+                                                pattern="\d*"
+                                                className="mt-2 p-2 border rounded w-full dark:text-gray-50"
                                             />
                                         </div>
                                     </div>

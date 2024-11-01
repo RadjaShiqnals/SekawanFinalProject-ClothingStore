@@ -35,6 +35,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
             abort(403, 'Unauthorized');
         }
     })->name('user.transaksi');
+    Route::get('/dashboard/clothes', function () {
+        $user = Auth::user();
+        if ($user->role === 'Admin') {
+            return Inertia::render('Admin/AdminClothes');
+        } else {
+            abort(403, 'Unauthorized');
+        }
+    })->name('admin.clothes');
+    Route::get('/dashboard/user', function () {
+        $user = Auth::user();
+        if ($user->role === 'Admin') {
+            return Inertia::render('Admin/AdminUser');
+        } else {
+            abort(403, 'Unauthorized');
+        }
+    })->name('admin.user');
 });
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
