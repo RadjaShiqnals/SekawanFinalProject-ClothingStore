@@ -151,7 +151,7 @@ export default function AdminDashboard() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
+    
         const formDataObj = new FormData();
         Object.keys(formData).forEach((key) => {
             if (
@@ -161,12 +161,13 @@ export default function AdminDashboard() {
                 formDataObj.append(key, formData[key]);
             }
         });
-
+    
         const url = modalType.includes("create")
             ? `/api/admin/create-${modalType.split("-")[1] === "kategori" ? "kategori-pakaian" : modalType.split("-")[1]}`
             : `/api/admin/update-${modalType.split("-")[1] === "kategori" ? "kategori-pakaian" : modalType.split("-")[1]}/${
                 selectedItem.pakaian_id || selectedItem.kategori_pakaian_id
         }`;
+    
         axios
             .post(url, formDataObj, {
                 headers: {
@@ -189,10 +190,12 @@ export default function AdminDashboard() {
                     pakaian_gambar_url: null,
                     kategori_pakaian_nama: "",
                 });
-                if (modalType.includes("pakaian")) {
+                if (/^create-pakaian$|^edit-pakaian$|^delete-pakaian$/.test(modalType)) {
                     fetchPakaian();
-                } else {
+                } else if (/^create-kategori-pakaian$|^edit-kategori-pakaian$|^delete-kategori-pakaian$/.test(modalType)) {
                     fetchKategoriPakaian();
+                } else {
+                    console.error("Unknown modal type:", modalType);
                 }
             })
             .catch((error) => {

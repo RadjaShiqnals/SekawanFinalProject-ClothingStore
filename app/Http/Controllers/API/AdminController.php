@@ -333,7 +333,7 @@ class AdminController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'kategori_pakaian_nama' => 'sometimes|required|string|max:255|unique:kategori_pakaian,kategori_pakaian_nama,' . $id,
+            'kategori_pakaian_nama' => 'sometimes|required|string|max:255|unique:kategori_pakaian,kategori_pakaian_nama,' . $id. ',kategori_pakaian_id',
         ]);
 
         if ($validator->fails()) {

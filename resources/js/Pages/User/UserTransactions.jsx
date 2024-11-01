@@ -189,8 +189,8 @@ export default function UserTransactions() {
             {showModal && (
                 <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 backdrop-blur-sm">
                     <div className="bg-white p-6 rounded-lg shadow-lg dark:bg-gray-700 max-w-4xl w-full">
-                        <h3 className="text-lg font-semibold mb-4">Transaction Details</h3>
-                        <div className="flex flex-wrap -mx-2">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Transaction Details</h3>
+                        <div className="flex flex-wrap -mx-2 text-gray-900 dark:text-gray-100">
                             {transactionDetails.map(detail => (
                                 <div key={detail.pembelian_detail_id} className="w-full sm:w-1/2 md:w-1/3 px-2 mb-4">
                                     <div className="bg-white p-4 rounded-lg shadow-md dark:bg-gray-800">
@@ -204,7 +204,7 @@ export default function UserTransactions() {
                             ))}
                         </div>
                         <div className="w-full px-2 mb-4">
-                            <div className="bg-white p-4 dark:bg-gray-800 text-right">
+                            <div className="p-4 text-right text-gray-900 dark:text-gray-100">
                                 <p className="font-semibold">Total Harga:</p>
                                 <p className="text-lg">
                                     {transactionDetails.reduce((total, detail) => total + detail.pembelian_detail_total_harga, 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
