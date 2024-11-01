@@ -50,7 +50,7 @@ This project is a clothing store application built with Laravel and React, suppo
     php artisan migrate --seed
     ```
 
-6. (Optional) Seed an admin account (this step assumes you have created an admin seeder):
+6. Seed an admin account (opsional if seed not running):
 
     ```sh
     php artisan db:seed --class=AdminSeeder
